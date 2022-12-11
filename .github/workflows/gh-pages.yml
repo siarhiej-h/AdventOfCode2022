@@ -27,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: replace base href for github pages to load resources correctly
-        run: sed -i 's/<base href=\"\/\" \/>/<base href=\"\/AdventOfCode2022\/\" \/>/' /home/runner/work/AdventOfCode2022/AoC/wwwroot/index.html
+        run: sed -i 's/<base href=\"\/\" \/>/<base href=\"\/AdventOfCode2022\/\" \/>/' /home/runner/work/AdventOfCode2022/AdventOfCode2022/AoC/wwwroot/index.html
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:

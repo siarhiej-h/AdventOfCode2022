@@ -1,0 +1,54 @@
+﻿<h1>Day @Number</h1>
+<div>
+    <a href="@TaskLink">Day @Number tasks</a>
+</div>
+<div>
+    <a href="@InputLink">Day @Number input</a>
+</div>
+<div>
+    <a href="@SourceCodeLink">Source code</a>
+</div>
+
+<EditForm Model="@inputModel" OnValidSubmit="@HandleValidSubmit">
+    <div>
+        <label for="input-area">Please put this day's input here</label>
+    </div>
+    <div>
+        <InputTextArea id="input-area" DisplayName="input-area" @bind-Value="inputModel.Input" />
+    </div>
+    <button type="submit">Submit</button>
+</EditForm>
+
+<MarkupComponent Text="@firstResult" Label="First task"/>
+
+<MarkupComponent Text="@secondResult" Label="Second task"/>
+
+@code {
+    private InputModel inputModel = new();
+
+    [Parameter]
+    public Solutions.ISolution Solution { get; set; }
+
+    [Parameter]
+    public int Number { get; set; }
+
+    [Parameter]
+    public string TaskLink { get; set; }
+
+    [Parameter]
+    public string InputLink { get; set; }
+
+    [Parameter]
+    public string SourceCodeLink { get; set; }
+
+    private string firstResult = string.Empty;
+    private string secondResult = string.Empty;
+
+    private void HandleValidSubmit()
+    {
+        var lines = inputModel.Input.Split("\n");
+
+        firstResult = Solution.CalculateFirstTask(lines);
+        secondResult = Solution.CalculateSecondTask(lines);
+    }
+}

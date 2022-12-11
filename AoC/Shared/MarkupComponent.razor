@@ -1,0 +1,21 @@
+﻿<label>@Label</label>
+<pre>
+    <code>
+        @Markup
+    </code>
+</pre>
+
+@code {
+    private string Markup;
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string Label { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Markup = new MarkupString(Text).Value.ToString();
+    }
+}
