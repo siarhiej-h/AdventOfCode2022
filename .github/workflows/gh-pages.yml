@@ -35,7 +35,7 @@ jobs:
       - name: dotnet install wasm tools
         run: dotnet workload install wasm-tools
       - name: Publish with dotnet
-        run: dotnet publish --configuration Release --output build
+        run: dotnet publish AoC --configuration Release --output build
       - name: Setup Pages
         uses: actions/configure-pages@v2
         with:
