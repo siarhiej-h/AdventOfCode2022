@@ -14,21 +14,31 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="day1">
-                <span class="oi oi-plus" aria-hidden="true"></span> Day 1
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="day2">
-                <span class="oi oi-plus" aria-hidden="true"></span> Day 2
-            </NavLink>
-        </div>
+        @foreach (var (link, number) in Links)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href=@link>
+                    <span class="oi oi-plus" aria-hidden="true"></span> Day @number
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+
+    private int DaysCompleted = 3;
+
+    private IEnumerable<(string, int)> Links {
+        get
+        {
+            for (int i = 1; i <= DaysCompleted; i++)
+            {
+                yield return ($"day{i}", i);
+            }
+        }
+    }
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
