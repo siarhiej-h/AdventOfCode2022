@@ -1,12 +1,12 @@
 ﻿<h1>Day @Number</h1>
 <div>
-    <a href="@TaskLink">Day @Number tasks</a>
+    <a href=@TasksLink>Day @Number tasks</a>
 </div>
 <div>
-    <a href="@InputLink">Day @Number input</a>
+    <a href=@InputsLink>Day @Number input</a>
 </div>
 <div>
-    <a href="@SourceCodeLink">Source code</a>
+    <a href=@SourceLink>Source code</a>
 </div>
 
 <EditForm Model="@inputModel" OnValidSubmit="@HandleValidSubmit">
@@ -32,14 +32,11 @@
     [Parameter]
     public int Number { get; set; }
 
-    [Parameter]
-    public string TaskLink { get; set; }
+    public string TasksLink => $"https://adventofcode.com/2022/day/{Number}";
 
-    [Parameter]
-    public string InputLink { get; set; }
+    public string InputsLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/Inputs/day{Number}.txt";
 
-    [Parameter]
-    public string SourceCodeLink { get; set; }
+    public string SourceLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/AoC/Solutions/Day{Number}.cs";
 
     private string firstResult = string.Empty;
     private string secondResult = string.Empty;
