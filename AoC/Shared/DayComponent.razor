@@ -1,4 +1,6 @@
-﻿<h1>Day @Number</h1>
+﻿@using Solutions;
+
+<h1>Day @Number</h1>
 <div>
     <a href=@TasksLink>Day @Number tasks</a>
 </div>
@@ -27,7 +29,7 @@
     private InputModel inputModel = new();
 
     [Parameter]
-    public Solutions.ISolution Solution { get; set; }
+    public ISolution? Solution { get; set; }
 
     [Parameter]
     public int Number { get; set; }
@@ -43,9 +45,7 @@
 
     private void HandleValidSubmit()
     {
-        var lines = inputModel.Input.Split("\n");
-
-        firstResult = Solution.CalculateFirstTask(lines);
-        secondResult = Solution.CalculateSecondTask(lines);
+        ArgumentNullException.ThrowIfNull(Solution);
+        (firstResult, secondResult) = Solution.GetResults(inputModel);
     }
 }

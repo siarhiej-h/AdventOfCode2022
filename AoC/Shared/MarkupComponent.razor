@@ -6,16 +6,17 @@
 </pre>
 
 @code {
-    private string Markup;
+    private string? Markup;
 
     [Parameter]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     [Parameter]
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     protected override void OnParametersSet()
     {
+        ArgumentNullException.ThrowIfNull(Text);
         Markup = new MarkupString(Text).Value.ToString();
     }
 }
