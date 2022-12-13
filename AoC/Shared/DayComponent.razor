@@ -1,4 +1,5 @@
 ﻿@using Solutions;
+@using System.Diagnostics;
 
 <h1>Day @Number</h1>
 <div>
@@ -21,9 +22,28 @@
     <button type="submit">Submit</button>
 </EditForm>
 
-<MarkupComponent Text="@firstResult" Label="First task"/>
+@if (IsCalculating)
+{
+    <div>
+        <label>Calculating...</label>
+    </div>
+}
+else if (!string.IsNullOrEmpty(calculationTimeMs))
+{
+    <div>
+        <label>Calculation took @calculationTimeMs ms</label>
+    </div>
+}
 
-<MarkupComponent Text="@secondResult" Label="Second task"/>
+@if (!string.IsNullOrEmpty(firstResult))
+{
+    <MarkupComponent Text="@firstResult" Label="First task" />
+}
+
+@if (!string.IsNullOrEmpty(secondResult))
+{
+    <MarkupComponent Text="@secondResult" Label="Second task" />
+}
 
 @code {
     private InputModel inputModel = new();
@@ -34,6 +54,8 @@
     [Parameter]
     public int Number { get; set; }
 
+    public bool IsCalculating { get; set; }
+
     public string TasksLink => $"https://adventofcode.com/2022/day/{Number}";
 
     public string InputsLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/Inputs/day{Number}.txt";
@@ -42,10 +64,19 @@
 
     private string firstResult = string.Empty;
     private string secondResult = string.Empty;
+    private string calculationTimeMs = string.Empty;
 
     private void HandleValidSubmit()
     {
+        IsCalculating = true;
+        var stopwatch = Stopwatch.StartNew();
         ArgumentNullException.ThrowIfNull(Solution);
-        (firstResult, secondResult) = Solution.GetResults(inputModel);
+        Task.Run(() =>
+        {
+            (firstResult, secondResult) = Solution.GetResults(inputModel);
+            calculationTimeMs = stopwatch.ElapsedMilliseconds.ToString();
+            IsCalculating = false;
+            StateHasChanged();
+        });
     }
 }
