@@ -12,70 +12,68 @@
     <a href=@SourceLink>Source code</a>
 </div>
 
-<EditForm Model="@inputModel" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@_inputModel" OnValidSubmit="@HandleValidSubmit">
     <div>
         <label for="input-area">Please put this day's input here</label>
     </div>
     <div>
-        <InputTextArea id="input-area" DisplayName="input-area" @bind-Value="inputModel.Input" />
+        <InputTextArea id="input-area" DisplayName="input-area" @bind-Value="_inputModel.Input" />
     </div>
     <button type="submit">Submit</button>
 </EditForm>
 
-@if (IsCalculating)
+@if (_isCalculating)
 {
     <div>
         <label>Calculating...</label>
     </div>
 }
-else if (!string.IsNullOrEmpty(calculationTimeMs))
+else if (!string.IsNullOrEmpty(_calculationTimeMs))
 {
     <div>
-        <label>Calculation took @calculationTimeMs ms</label>
+        <label>Calculation took @_calculationTimeMs ms</label>
     </div>
 }
 
-@if (!string.IsNullOrEmpty(firstResult))
+@if (!string.IsNullOrEmpty(_firstResult))
 {
-    <MarkupComponent Text="@firstResult" Label="First task" />
+    <MarkupComponent Text="@_firstResult" Label="First task" />
 }
 
-@if (!string.IsNullOrEmpty(secondResult))
+@if (!string.IsNullOrEmpty(_secondResult))
 {
-    <MarkupComponent Text="@secondResult" Label="Second task" />
+    <MarkupComponent Text="@_secondResult" Label="Second task" />
 }
 
 @code {
-    private InputModel inputModel = new();
-
     [Parameter]
     public ISolution? Solution { get; set; }
 
     [Parameter]
     public int Number { get; set; }
 
-    public bool IsCalculating { get; set; }
+    private string TasksLink => $"https://adventofcode.com/2022/day/{Number}";
 
-    public string TasksLink => $"https://adventofcode.com/2022/day/{Number}";
+    private string InputsLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/Inputs/day{Number}.txt";
 
-    public string InputsLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/Inputs/day{Number}.txt";
+    private string SourceLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/AoC/Solutions/Day{Number}.cs";
 
-    public string SourceLink => $"https://github.com/siarhiej-h/AdventOfCode2022/raw/main/AoC/Solutions/Day{Number}.cs";
-
-    private string firstResult = string.Empty;
-    private string secondResult = string.Empty;
-    private string calculationTimeMs = string.Empty;
+    private InputModel _inputModel = new();
+    private bool _isCalculating = false;
+    private string _firstResult = string.Empty;
+    private string _secondResult = string.Empty;
+    private string _calculationTimeMs = string.Empty;
 
     private void HandleValidSubmit()
     {
-        IsCalculating = true;
-        var stopwatch = Stopwatch.StartNew();
+        _isCalculating = true;
         ArgumentNullException.ThrowIfNull(Solution);
         Task.Run(() =>
         {
-            (firstResult, secondResult) = Solution.GetResults(inputModel);
-            calculationTimeMs = stopwatch.ElapsedMilliseconds.ToString();
-            IsCalculating = false;
+            var stopwatch = Stopwatch.StartNew();
+            (_firstResult, _secondResult) = Solution.GetResults(_inputModel);
+            _calculationTimeMs = stopwatch.ElapsedMilliseconds.ToString();
+            _isCalculating = false;
             StateHasChanged();
         });
     }
