@@ -28,12 +28,12 @@
 @code {
     private bool collapseNavMenu = true;
 
-    private int DaysCompleted = 3;
+    private const int AdventDays = 25;
 
     private IEnumerable<(string, int)> Links {
         get
         {
-            for (int i = 1; i <= DaysCompleted; i++)
+            for (int i = 1; i <= AdventDays; i++)
             {
                 yield return ($"day{i}", i);
             }
