@@ -1,0 +1,26 @@
+﻿@page "/day15"
+
+<DayComponent Number=15 Solution=solution/>
+
+<MarkupComponent Text="@_sensors" Label="Sensors" />
+
+@code {
+    private Solutions.ISolution solution = new Solutions.Day15();
+
+    private string _sensors = @"
+            //    /    \
+            //   /      \  /    \
+            //  /        \/      \
+            // /         /\  /\   \
+            // \    /\  / / /  \   \
+            //  \  /  \ \/ /    \  /
+            //   \/    \/\/      \/
+            //   /\    /\/\      /\
+            //  /  \  / /\ \    /  \
+            // /    \/  \ \ \  /   /
+            // \         \/  \/   /
+            //  \        /\      /
+            //   \      /  \    /
+            //    \    /
+";
+}
