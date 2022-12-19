@@ -4,113 +4,72 @@
     {
         public string CalculateFirstTask(string[] input)
         {
-            var (grid, startPoints, endPoint) = ParseInput(input, false);
-            return GetMinimumSteps(grid, startPoints, endPoint).ToString();
+            ParseInput(input, false, out var grid, out var possibleStarts, out var end);
+            return TryGetShortestPath(possibleStarts, end, grid, out var result) ? result.ToString() : string.Empty;
         }
 
         public string CalculateSecondTask(string[] input)
         {
-            var (grid, startPoints, endPoint) = ParseInput(input, true);
-            return GetMinimumSteps(grid, startPoints, endPoint).ToString();
+            ParseInput(input, true, out var grid, out var possibleStarts, out var end);
+            return TryGetShortestPath(possibleStarts, end, grid, out var result) ? result.ToString() : string.Empty;
         }
 
-        private static int GetMinimumSteps(List<List<int>> grid, List<(int row, int column)> possibleStarts, (int row, int column) end)
+        private static bool TryGetShortestPath(HashSet<Pos> startPositions, Pos target, Grid grid, out int result, HashSet<Pos>? visited = null, int distance = 0)
         {
-            int minSteps = int.MaxValue;
-            var visited = new Dictionary<(int row, int col), int>();
-            foreach (var start in possibleStarts)
+            visited ??= new HashSet<Pos>();
+
+            var nextPositions = new HashSet<Pos>();
+            foreach (var startPos in startPositions)
             {
-                var positions = new Stack<Position>();
-                var position = new Position(start, grid);
-                int movesAvailable = position.PossibleMoves.Count;
-
-                positions.Push(position);
-
-                while (movesAvailable > 0)
+                if (startPos == target)
                 {
-                    if (visited.TryGetValue((position.Row, position.Column), out var count))
-                    {
-                        if (positions.Count < count)
-                        {
-                            visited[(position.Row, position.Column)] = positions.Count;
-                        }
-                    }
-                    else
-                    {
-                        visited.Add((position.Row, position.Column), positions.Count);
-                    }
+                    result = distance;
+                    return true;
+                }
 
-                    if (position.Row - end.row == 0 && position.Column - end.column == 0)
-                    {
-                        minSteps = Math.Min(minSteps, positions.Count - 1);
-                        position = positions.Pop();
-                        movesAvailable -= position.PossibleMoves.Count;
-                        position = positions.Peek();
-                    }
-                    else if (position.PossibleMoves.TryPop(out var next))
-                    {
-                        movesAvailable--;
+                visited.Add(startPos);
+                foreach (var nextMove in GetPossibleMoves(startPos, grid))
+                {
+                    if (visited.Contains(nextMove))
+                        continue;
 
-                        if (visited.TryGetValue(next, out var longest))
-                        {
-                            if (longest <= positions.Count)
-                                continue;
-                            visited[next] = positions.Count;
-                        }
-
-                        position = new Position(next, grid);
-
-                        movesAvailable += position.PossibleMoves.Count;
-                        positions.Push(position);
-                    }
-                    else
-                    {
-                        positions.Pop();
-                        position = positions.Peek();
-                    }
+                    nextPositions.Add(nextMove);
                 }
             }
-            return minSteps;
+            if (!nextPositions.Any())
+            {
+                result = -1;
+                return false;
+            }
+            return TryGetShortestPath(nextPositions, target, grid, out result, visited, distance + 1);
         }
 
-        private static (List<List<int>> grid, List<(int row, int column)> startPoints, (int row, int column) endPoint) ParseInput(string[] input, bool includeNonStart)
+        private static IEnumerable<Pos> GetPossibleMoves(Pos start, Grid grid)
         {
-            var grid = new List<List<int>>();
-
-            var possibleStarts = new List<(int row, int column)>();
-            var (endRow, endColumn) = (0, 0);
-
-            int row = 0;
-            foreach (var line in input)
+            var height = grid[start];
+            var nextPos = new Pos(start.Row, start.Col - 1);
+            if (grid.TryGetValue(nextPos, out var nextHeight) && nextHeight - height <= 1)
             {
-                int column = 0;
-                var list = new List<int>();
-                foreach (var ch in line)
-                {
-                    int height;
-                    if (ch == 'S' || (ch == 'a' && includeNonStart))
-                    {
-                        possibleStarts.Add((row, column));
-                        height = 0;
-                    }
-                    else if (ch == 'E')
-                    {
-                        endRow = row;
-                        endColumn = column;
-                        height = GetHeight('z');
-                    }
-                    else
-                    {
-                        height = GetHeight(ch);
-                    }
-                    list.Add(height);
-
-                    column++;
-                }
-                grid.Add(list);
-                row++;
+                yield return nextPos;
             }
-            return (grid, possibleStarts, (endRow, endColumn));
+
+            nextPos = new Pos(start.Row, start.Col + 1);
+            if (grid.TryGetValue(nextPos, out nextHeight) && nextHeight - height <= 1)
+            {
+                yield return nextPos;
+            }
+
+            nextPos = new Pos(start.Row - 1, start.Col);
+            if (grid.TryGetValue(nextPos, out nextHeight) && nextHeight - height <= 1)
+            {
+                yield return nextPos;
+            }
+
+            nextPos = new Pos(start.Row + 1, start.Col);
+            if (grid.TryGetValue(nextPos, out nextHeight) && nextHeight - height <= 1)
+            {
+                yield return nextPos;
+            }
         }
 
         private static int GetHeight(char ch)
@@ -118,55 +77,77 @@
             return ch - 'a';
         }
 
-        private class Position
+        private static void ParseInput(string[] input, bool includeAllStarts, out Grid grid, out HashSet<Pos> possibleStarts, out Pos end)
         {
-            public int Row { get; private set; }
-            public int Column { get; private set; }
-
-            public Stack<(int row, int column)> PossibleMoves { get; private set; }
-
-            public Position((int row, int column) pos, List<List<int>> grid)
+            grid = new Grid();
+            possibleStarts = new HashSet<Pos>();
+            end = new Pos(0, 0);
+            int row = 0;
+            foreach (var line in input)
             {
-                Row = pos.row;
-                Column = pos.column;
+                int column = 0;
+                foreach (var ch in line)
+                {
+                    int height;
+                    var pos = new Pos(row, column);
+                    if (ch == 'S')
+                    {
+                        possibleStarts.Add(pos);
+                        height = 0;
+                    }
+                    else if (ch == 'a' && includeAllStarts)
+                    {
+                        possibleStarts.Add(pos);
+                        height = 0;
+                    }
+                    else if (ch == 'E')
+                    {
+                        end = pos;
+                        height = GetHeight('z');
+                    }
+                    else
+                    {
+                        height = GetHeight(ch);
+                    }
 
-                var height = grid[pos.row][pos.column];
-                PossibleMoves = GetPossibleMoves(height, pos.row, pos.column, grid);
+                    grid.Add(pos, height);
+
+                    column++;
+                }
+                row++;
+            }
+        }
+
+        private record struct Pos(int Row, int Col);
+
+        private class Grid
+        {
+            private Dictionary<Pos, int> HeightMap { get; set; } = new Dictionary<Pos, int>();
+
+            public int Rows { get; private set; } = 0;
+
+            public int Columns { get; private set; } = 0;
+
+            public int this[Pos pos]
+            {
+                get => HeightMap[pos];
             }
 
-            private static Stack<(int row, int column)> GetPossibleMoves(int height, int row, int column, List<List<int>> grid)
+            public void Add(Pos pos, int height)
             {
-                Stack<(int row, int column)> moves = new Stack<(int row, int column)>();
+                HeightMap[pos] = height;
+                this.Rows = Math.Max(this.Rows, pos.Row);
+                this.Columns = Math.Max(this.Columns, pos.Col);
+            }
 
-                var rowValues = grid[row];
-                var rows = grid.Count;
-                var cols = grid[0].Count;
+            public bool TryGetValue(Pos pos, out int value)
+            {
+                return HeightMap.TryGetValue(pos, out value);
+            }
 
-                (int, int) next;
-                if (column > 0 && rowValues[column - 1] - height <= 1)
-                {
-                    next = (row, column - 1);
-                    moves.Push(next);
-                }
-                if (column < cols - 1 && rowValues[column + 1] - height <= 1)
-                {
-                    next = (row, column + 1);
-                    moves.Push(next);
-                }
-
-                if (row > 0 && grid[row - 1][column] - height <= 1)
-                {
-                    next = (row - 1, column);
-                    moves.Push(next);
-                }
-
-                if (row < rows - 1 && grid[row + 1][column] - height <= 1)
-                {
-                    next = (row + 1, column);
-                    moves.Push(next);
-                }
-
-                return moves;
+            public bool ContainsKey(Pos pos)
+            {
+                return HeightMap.ContainsKey(pos);
             }
         }
     }
